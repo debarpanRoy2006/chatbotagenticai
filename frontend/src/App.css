@@ -1,0 +1,443 @@
+/* ═══════════════════════════════════════════════════════
+   Agentic AI Assistant — Design System
+   ═══════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ── Ultra-Minimalist Modern AI Theme (ChatGPT / Claude Style) ── */
+:root {
+  --bg-color: #212121;       /* Deep matte gray */
+  --sidebar-bg: #171717;     /* Darker sidebar */
+  --text-main: #ECECEC;      /* Crisp off-white */
+  --text-muted: #8E8E8E;     /* Muted gray */
+  --border-color: #383838;   /* Subtle divider lines */
+  --input-bg: #2F2F2F;       /* Elevated element background */
+  --accent: #FFFFFF;         /* Pure white for active states */
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-main);
+  line-height: 1.6;
+}
+
+.app-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* ── Custom Scrollbar ── */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #555; }
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 260px;
+  background-color: var(--sidebar-bg);
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  /* Removed border radius so it sits flush like a real dashboard */
+  border-right: 1px solid var(--border-color);
+  z-index: 10;
+}
+
+.sidebar-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1.5rem;
+  padding-left: 0.5rem;
+}
+
+.history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.history-item {
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.25rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  transition: background-color 0.1s, color 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.history-item:hover {
+  background-color: var(--input-bg);
+  color: var(--text-main);
+}
+
+.history-item.active {
+  background-color: var(--input-bg);
+  color: var(--text-main);
+  font-weight: 500;
+}
+
+/* ── Main Panel ── */
+.main-panel {
+  flex: 1;
+  padding: 2rem;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.main-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  margin-top: 5vh;
+}
+
+.main-header h1 {
+  font-size: 2rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: var(--text-main);
+  letter-spacing: -0.02em;
+}
+
+.main-header .subtitle {
+  color: var(--text-muted);
+  font-size: 1rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* ── Flattened Input Area ── */
+.input-card {
+  background: transparent; /* Removed card background */
+  width: 100%;
+  max-width: 800px;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  margin-bottom: 2rem;
+}
+
+.input-label {
+  display: none; /* Hide labels for a cleaner look, placeholders do the job */
+}
+
+.prompt-input {
+  width: 100%;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.75rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+  background-color: var(--input-bg);
+  color: var(--text-main);
+  box-sizing: border-box;
+  margin-bottom: 1rem;
+  transition: border-color 0.2s;
+  line-height: 1.5;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.prompt-input::placeholder {
+  color: var(--text-muted);
+}
+
+.prompt-input:focus {
+  outline: none;
+  border-color: #666; /* Subtle focus ring */
+}
+
+/* ── File Upload ── */
+.file-upload-container {
+  border: 1px dashed var(--border-color);
+  padding: 1rem;
+  border-radius: 0.5rem;
+  text-align: left;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.file-upload-container input[type="file"]::file-selector-button {
+  background-color: transparent;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 0.4rem 0.8rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.85rem;
+  transition: background 0.1s;
+}
+
+.file-upload-container input[type="file"]::file-selector-button:hover {
+  background-color: var(--input-bg);
+}
+
+.file-upload-container p {
+  display: none; /* Hide the subtext for cleanliness */
+}
+
+/* ── Action Buttons (Turned into sleek chips) ── */
+.action-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  justify-content: flex-start;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.8rem;
+  background: transparent !important; /* Overrides previous neon backgrounds */
+  border: 1px solid var(--border-color);
+  border-radius: 2rem;
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: none !important; /* Removes all glows */
+}
+
+.action-btn:hover:not(:disabled) {
+  background: var(--input-bg) !important;
+  color: var(--text-main);
+  border-color: #555;
+  transform: none; /* Removed bouncy hover */
+}
+
+.action-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ── Flattened Result Area ── */
+.result-card {
+  background: transparent;
+  width: 100%;
+  max-width: 800px;
+  padding: 0;
+  border: none;
+  box-shadow: none;
+  border-top: 1px solid var(--border-color);
+  padding-top: 2rem;
+}
+
+.result-card h3 {
+  display: none; /* Hide the "Result:" text */
+}
+
+.result-content {
+  white-space: pre-wrap;
+  background-color: transparent;
+  color: var(--text-main);
+  padding: 0;
+  border: none;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  overflow-x: auto;
+  font-size: 0.9rem;
+}
+
+/* ── Modals (Flat & Modern) ── */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  backdrop-filter: blur(2px);
+}
+
+.modal-content {
+  background: var(--bg-color);
+  border: 1px solid var(--border-color);
+  width: 90%;
+  max-width: 650px;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+}
+
+.modal-header {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 1.5rem;
+  color: var(--text-main) !important;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 0.75rem;
+}
+
+.btn-outline {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: 0.25rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.btn-outline:hover {
+  background: var(--input-bg);
+  color: var(--text-main);
+}
+
+/* ── Chat Messages (Transcript Style, no Bubbles) ── */
+.chat-bubble {
+  max-width: 100%;
+  border-radius: 0;
+  background: transparent !important; /* Overrides bubbles */
+  color: var(--text-main) !important;
+  border: none !important;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* Adds "You" above the user's message */
+.chat-user::before {
+  content: "You";
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+/* Adds "AI" above the bot's message */
+.chat-ai::before {
+  content: "DevMadeEasy";
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+}
+
+/* ── Clean Error Banner ── */
+.error-banner {
+  width: 100%;
+  max-width: 800px;
+  padding: 0.75rem 1rem;
+  background-color: transparent;
+  color: #ef4444; 
+  border-left: 3px solid #ef4444;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+/* ── Mobile Sidebar Toggle Elements ── */
+.menu-toggle {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-size: 1.5rem;
+  cursor: pointer;
+  position: absolute;
+  top: 1rem;
+  left: 1rem;
+  z-index: 30;
+  padding: 0.5rem;
+}
+
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 40;
+  backdrop-filter: blur(2px);
+}
+
+/* ── Media Queries for Mobile Responsiveness ── */
+@media (max-width: 768px) {
+  .menu-toggle {
+    display: block;
+  }
+
+  .sidebar-overlay.open {
+    display: block;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: -100%; /* Hidden off-screen by default */
+    top: 0;
+    bottom: 0;
+    transition: left 0.3s ease-in-out;
+    z-index: 50; /* Sits above everything when open */
+    box-shadow: 4px 0 25px rgba(0,0,0,0.8);
+  }
+
+  .sidebar.open {
+    left: 0; /* Slides in */
+  }
+
+  .main-panel {
+    padding: 1rem;
+    padding-top: 4rem; /* Make room for the hamburger menu */
+  }
+
+  .main-header {
+    margin-top: 0;
+    margin-bottom: 2rem;
+  }
+
+  .main-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .main-header .subtitle {
+    font-size: 0.9rem;
+  }
+
+  .action-grid {
+    gap: 0.5rem;
+  }
+
+  /* Make action buttons fit beautifully on mobile */
+  .action-btn {
+    flex: 1 1 calc(50% - 0.5rem); 
+    justify-content: center;
+    font-size: 0.75rem;
+    padding: 0.5rem;
+  }
+
+  .modal-content {
+    width: 95%;
+    padding: 1.25rem;
+    margin: 1rem;
+  }
+
+  .file-upload-container {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}

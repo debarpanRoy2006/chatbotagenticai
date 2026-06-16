@@ -1,0 +1,266 @@
+# ──────────────────────────────────────────────────────────
+# Antigravity SDK — Frontend Tool Descriptors
+# ──────────────────────────────────────────────────────────
+#
+# These tool definitions expose sandboxed operations that
+# allow the Antigravity agent to safely inspect, modify,
+# and verify React frontend components and hooks.
+#
+# POLICY: deny-by-default for all write operations.
+# Every write tool requires explicit path allowlisting
+# and is scoped to specific subdirectories.
+# ──────────────────────────────────────────────────────────
+
+version: "1.0"
+platform: antigravity
+default_policy: deny
+
+tools:
+  # ════════════════════════════════════════════════════════
+  # READ TOOLS — Allowed by default within frontend/src/
+  # ════════════════════════════════════════════════════════
+
+  - name: frontend:read_component
+    description: >
+      Read the source code of any React component file (.tsx, .ts, .jsx)
+      within the frontend/src/ directory tree. Returns the full file
+      content as a UTF-8 string.
+    action: read_file
+    policy: allow
+    constraints:
+      path_allowlist:
+        - "frontend/src/**/*.tsx"
+        - "frontend/src/**/*.ts"
+        - "frontend/src/**/*.jsx"
+      max_file_size_bytes: 524288  # 512 KB
+    parameters:
+      - name: file_path
+        type: string
+        required: true
+        description: >
+          Relative path from the project root to the component file.
+          Example: "frontend/src/App.tsx"
+        validation:
+          pattern: "^frontend/src/.+\\.(tsx|ts|jsx)$"
+
+  - name: frontend:read_hook
+    description: >
+      Read the source code of a custom React hook file from the
+      frontend/src/hooks/ directory. Returns full file content.
+    action: read_file
+    policy: allow
+    constraints:
+      path_allowlist:
+        - "frontend/src/hooks/**/*.ts"
+        - "frontend/src/hooks/**/*.tsx"
+      max_file_size_bytes: 262144  # 256 KB
+    parameters:
+      - name: file_path
+        type: string
+        required: true
+        description: >
+          Relative path from the project root to the hook file.
+          Example: "frontend/src/hooks/useAgent.ts"
+        validation:
+          pattern: "^frontend/src/hooks/.+\\.(ts|tsx)$"
+
+  - name: frontend:read_context
+    description: >
+      Read the source code of a React context provider from the
+      frontend/src/context/ directory.
+    action: read_file
+    policy: allow
+    constraints:
+      path_allowlist:
+        - "frontend/src/context/**/*.tsx"
+        - "frontend/src/context/**/*.ts"
+      max_file_size_bytes: 262144
+    parameters:
+      - name: file_path
+        type: string
+        required: true
+        description: >
+          Relative path to the context file.
+          Example: "frontend/src/context/ApiContext.tsx"
+        validation:
+          pattern: "^frontend/src/context/.+\\.(tsx|ts)$"
+
+  - name: frontend:read_styles
+    description: >
+      Read CSS or style files from the frontend source tree.
+    action: read_file
+    policy: allow
+    constraints:
+      path_allowlist:
+        - "frontend/src/**/*.css"
+        - "frontend/src/**/*.scss"
+      max_file_size_bytes: 262144
+    parameters:
+      - name: file_path
+        type: string
+        required: true
+        validation:
+          pattern: "^frontend/src/.+\\.(css|scss)$"
+
+  - name: frontend:list_structure
+    description: >
+      List all files and directories within a given frontend
+      subdirectory. Useful for auditing circular imports and
+      understanding the component tree.
+    action: list_dir
+    policy: allow
+    constraints:
+      path_allowlist:
+        - "frontend/src/"
+        - "frontend/src/**"
+    parameters:
+      - name: directory_path
+        type: string
+        required: true
+        validation:
+          pattern: "^frontend/src(/.*)?$"
+
+  # ════════════════════════════════════════════════════════
+  # WRITE TOOLS — Deny by default, explicit approval required
+  # ════════════════════════════════════════════════════════
+
+  - name: frontend:modify_component
+    description: >
+      Modify the source code of a specific React component file.
+      Restricted to .tsx and .ts files under frontend/src/.
+      Requires explicit user approval before execution.
+    action: write_file
+    policy: deny
+    requires_approval: true
+    audit_log: true
+    constraints:
+      path_allowlist:
+        - "frontend/src/components/**/*.tsx"
+        - "frontend/src/components/**/*.ts"
+        - "frontend/src/App.tsx"
+      path_denylist:
+        - "frontend/src/main.tsx"        # Entry point — never auto-modify
+        - "frontend/src/vite-env.d.ts"   # Type declarations — never modify
+        - "frontend/node_modules/**"     # Dependencies — never modify
+      max_file_size_bytes: 524288
+      backup_before_write: true
+    parameters:
+      - name: file_path
+        type: string
+        required: true
+        validation:
+          pattern: "^frontend/src/(components/.+|App)\\.(tsx|ts)$"
+      - name: content
+        type: string
+        required: true
+        description: "The new file content to write."
+      - name: reason
+        type: string
+        required: true
+        description: "Explanation of why this modification is being made."
+
+  - name: frontend:modify_hook
+    description: >
+      Modify a custom React hook file in frontend/src/hooks/.
+      Requires explicit user approval before execution.
+    action: write_file
+    policy: deny
+    requires_approval: true
+    audit_log: true
+    constraints:
+      path_allowlist:
+        - "frontend/src/hooks/**/*.ts"
+        - "frontend/src/hooks/**/*.tsx"
+      path_denylist:
+        - "frontend/node_modules/**"
+      max_file_size_bytes: 262144
+      backup_before_write: true
+    parameters:
+      - name: file_path
+        type: string
+        required: true
+        validation:
+          pattern: "^frontend/src/hooks/.+\\.(ts|tsx)$"
+      - name: content
+        type: string
+        required: true
+      - name: reason
+        type: string
+        required: true
+
+  - name: frontend:modify_context
+    description: >
+      Modify a React context provider file in frontend/src/context/.
+      Requires explicit user approval before execution.
+    action: write_file
+    policy: deny
+    requires_approval: true
+    audit_log: true
+    constraints:
+      path_allowlist:
+        - "frontend/src/context/**/*.tsx"
+        - "frontend/src/context/**/*.ts"
+      path_denylist:
+        - "frontend/node_modules/**"
+      max_file_size_bytes: 262144
+      backup_before_write: true
+    parameters:
+      - name: file_path
+        type: string
+        required: true
+        validation:
+          pattern: "^frontend/src/context/.+\\.(tsx|ts)$"
+      - name: content
+        type: string
+        required: true
+      - name: reason
+        type: string
+        required: true
+
+  # ════════════════════════════════════════════════════════
+  # VERIFY TOOLS — Build & Lint validation
+  # ════════════════════════════════════════════════════════
+
+  - name: frontend:verify_build
+    description: >
+      Run `npm run build` in the frontend/ directory and return
+      the exit code and stdout/stderr output. Used to validate
+      that the production build compiles without errors after
+      any modifications.
+    action: command
+    policy: allow
+    constraints:
+      working_directory: "frontend/"
+      command_allowlist:
+        - "npm run build"
+      timeout_seconds: 120
+      max_output_bytes: 1048576  # 1 MB
+    parameters: []
+
+  - name: frontend:lint_check
+    description: >
+      Run TypeScript type-checking (tsc --noEmit) in the frontend/
+      directory. Returns diagnostics for type errors.
+    action: command
+    policy: allow
+    constraints:
+      working_directory: "frontend/"
+      command_allowlist:
+        - "npx tsc --noEmit"
+      timeout_seconds: 60
+      max_output_bytes: 1048576
+    parameters: []
+
+  - name: frontend:dependency_audit
+    description: >
+      Run `npm ls --all --json` to produce a full dependency tree
+      for circular import and unresolved dependency detection.
+    action: command
+    policy: allow
+    constraints:
+      working_directory: "frontend/"
+      command_allowlist:
+        - "npm ls --all --json"
+      timeout_seconds: 30
+      max_output_bytes: 2097152  # 2 MB
+    parameters: []
