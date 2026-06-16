@@ -17,9 +17,9 @@ load_dotenv()
 class AgentCore:
     def __init__(self, api_key):
         self.api_key = api_key
-        self.base_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+        self.base_url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
 
-    def _call_gemini(self, prompt_parts, generation_config=None, max_retries=3):
+    def _call_gemini(self, prompt_parts, generation_config=None, max_retries=2):
         headers = {
             'Content-Type': 'application/json',
         }
@@ -33,7 +33,7 @@ class AgentCore:
 
         for attempt in range(max_retries):
             try:
-                response = requests.post(self.base_url, headers=headers, params=params, json=payload)
+                response = requests.post(self.base_url, headers=headers, params=params, json=payload, timeout=60)
                 response.raise_for_status()
                 result = response.json()
 
@@ -48,14 +48,16 @@ class AgentCore:
                 else:
                     return "No valid response from LLM."
             except requests.exceptions.HTTPError as e:
-                if response.status_code == 429:
+                if response.status_code in (429, 503, 500):
                     if attempt < max_retries - 1:
-                        wait_time = 2 ** attempt  # Exponential backoff: 1s, 2s, 4s...
-                        print(f"Rate limited (429). Retrying in {wait_time} seconds...")
+                        wait_time = 2 * (attempt + 1)  # Short backoff: 2s, 4s
+                        print(f"Server error ({response.status_code}). Retrying in {wait_time} seconds (attempt {attempt + 1}/{max_retries})...")
                         time.sleep(wait_time)
                         continue
                     else:
-                        return "Error: You have hit the Gemini API rate limit. Please wait a minute before trying again."
+                        if response.status_code == 429:
+                            return "RATE_LIMIT_ERROR: You have hit the Gemini API rate limit. Please wait a minute before trying again."
+                        return f"Error communicating with AI: The server returned {response.status_code}. Please try again in a moment."
                 print(f"Error calling Gemini API: {e}")
                 return f"Error communicating with AI: {e}"
             except requests.exceptions.RequestException as e:
@@ -250,9 +252,12 @@ def agent_api_view(request):
         action_plan = agent.planning_module(prompt, file_content, file_data_for_llm, file_type_for_llm, action_type_from_frontend)
         result = agent.tool_executor(action_plan)
 
-        # ── FIX: Return 429 if the rate limit error string is caught ──
-        if isinstance(result, str) and result.startswith("Error:"):
-            return JsonResponse({"error": result}, status=429)
+        # ── Return 429 only for actual rate-limit errors ──
+        if isinstance(result, str) and result.startswith("RATE_LIMIT_ERROR:"):
+            return JsonResponse({"error": result.replace("RATE_LIMIT_ERROR: ", "")}, status=429)
+        # ── Return 502 for other upstream errors ──
+        if isinstance(result, str) and (result.startswith("Error communicating") or result.startswith("An unexpected error")):
+            return JsonResponse({"error": result}, status=502)
 
         # ── FIX: Only save to database if successful ──
         Interaction.objects.create(
